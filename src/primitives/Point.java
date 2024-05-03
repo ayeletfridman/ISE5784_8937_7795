@@ -6,7 +6,7 @@ public class Point {
     public Point(double x, double y, double z) {
         xyz = new Double3(x,y,z);
     }
-    Point(Double3 xyz) {
+    public Point(Double3 xyz) {
         this.xyz = xyz;
     }
 
@@ -18,16 +18,16 @@ public class Point {
     }
     @Override
     public String toString() {
-        return "Point [xyz=" + xyz + "]";
+        return  " " + xyz;
     }
     public Point add(Vector vec){
-        Double3 temp=this.xyz.add(vec.xyz);
-        return new Point(temp);
+        return new Point(xyz.add(vec.xyz));
     }
 
     public primitives.Vector subtract(Point p){
-        Double3 temp = p.xyz.subtract(this.xyz);
-        return new primitives.Vector(temp);
+        if(xyz.equals(p.xyz))
+            throw new IllegalArgumentException("ERROR: Subtraction of identical vectors gives the zero vector");
+        return new Vector(xyz.subtract(p.xyz));
     }
     public double distanceSquared(Point p){
         return (this.xyz.d1-p.xyz.d1)*(this.xyz.d1-p.xyz.d1)+
