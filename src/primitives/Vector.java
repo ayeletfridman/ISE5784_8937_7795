@@ -1,13 +1,21 @@
 package primitives;
 
 public class Vector extends Point {
-
+    /**
+     * vector constructor with 3 parameters
+     * @param x - X axis coordinate
+     * @param y - Y axis coordinate
+     * @param z - Z axis coordinate
+     */
     public Vector(double x, double y, double z) {
         super(x, y, z);
         if (this.xyz.equals(Double3.ZERO))
             throw new IllegalArgumentException("Vector can't be zero");
     }
-
+    /**
+     *  vector constructor with 1 parameter
+     * @param xyz - Of type Double3
+     */
    public Vector(Double3 xyz) {
         super(xyz);
         if (xyz.equals(Double3.ZERO))
@@ -35,7 +43,6 @@ public class Vector extends Point {
 
     /**
      * The function multiplies the vector by a scalar
-     *
      * @param scalar
      * @return new vector
      */
