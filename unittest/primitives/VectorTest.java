@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class VectorTest {
 
     /**
-     * Test method for {@link primitives.Point#add(primitives.Vector)}
+     * Test method for add
      */
     @Test
     void add() {
