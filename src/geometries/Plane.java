@@ -12,7 +12,6 @@ import primitives.Vector;
  *
  */
 public class Plane implements Geometry{
-
     /**
      * A point on the plane
      */
