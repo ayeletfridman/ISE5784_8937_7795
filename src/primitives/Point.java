@@ -48,7 +48,7 @@ public class Point {
      * @param p - the start point
      * @return new vector
      */
-    public primitives.Vector subtract(Point p){
+    public Vector subtract(Point p){
         if(xyz.equals(p.xyz))
             throw new IllegalArgumentException("ERROR: Subtraction of identical vectors gives the zero vector");
         return new Vector(xyz.subtract(p.xyz));
