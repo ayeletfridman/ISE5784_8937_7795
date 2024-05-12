@@ -60,9 +60,11 @@ class VectorTest {
 
         //TC01: test that check if the result of the scalar multiplication is correct
         assertEquals(v1.dotProduct(v2), -28, "ERROR: dotProduct() wrong value");
+
+        // =============== Boundary Values Tests ==================
+
         //TC02: test that check if the result of the scalar multiplication is zero
         assertEquals(v1.dotProduct(v3), 0, "ERROR: dotProduct() for orthogonal vectors is not zero");
-
 
     }
 
@@ -76,9 +78,9 @@ class VectorTest {
         double vec = v1.length() * v3.length();
         /// ============ Equivalence Partitions Tests ==============
 
-        //TC01: test that check the correct of the result length
+        //TC01: test that check if the result length is correct
         assertEquals(vec, vr.length(), 0.00000001, "ERROR: crossProduct() wrong result length");
-        //TC02: test that check the if the crossProduct() result is orthogonal to its operands
+        //TC02: test that check if the crossProduct() result is orthogonal to its operands
         assertEquals(vr.dotProduct(v1), 0, 0.00000001, "ERROR: crossProduct() result is not orthogonal to its operands");
         assertEquals(vr.dotProduct(v3), 0, 0.00000001, "ERROR: crossProduct() result is not orthogonal to its operands");
 

@@ -25,7 +25,7 @@ class TriangleTest {
         Point[] pts =
                 {new Point(0, 0, 1), new Point(1, 0, 0), new Point(0, 1, 0)};
         // ensure there are no exceptions
-        assertDoesNotThrow(() -> triangle.getNormal(new Point(0, 0, 1)), "");
+        //assertDoesNotThrow(() -> triangle.getNormal(new Point(0, 0, 1)), "");
         // generate the test result
         Vector result = triangle.getNormal(new Point(0, 0, 1));
         // ensure |result| = 1

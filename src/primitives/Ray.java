@@ -35,4 +35,32 @@ public class Ray
     public String toString(){
         return p0.toString() + ", " + dir.toString();
     }
+
+    /**
+     * getter of the field p0
+     * @return the head point of the ray
+     */
+    public Point getP0()
+    {
+        return p0;
+    }
+
+    /**
+     * getter of the filed dir
+     * @return the direction vector of the ray
+     */
+    public Vector getDir()
+    {
+        return dir;
+    }
+    /**
+     * Calculation of a point on ray
+     * @param t
+     * @return the point
+     */
+    public Point getPoint(double t)
+    {
+        return isZero(t) ? p0 :p0.add(dir.scale(t));
+    }
+
 }
