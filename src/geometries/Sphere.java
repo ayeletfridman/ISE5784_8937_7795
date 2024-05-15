@@ -1,7 +1,10 @@
 package geometries;
 
 import primitives.Point;
+import primitives.Ray;
 import primitives.Vector;
+
+import java.util.List;
 
 /**
  * A class that represents a Sphere in space and inherits from RadialGeometry class
@@ -31,5 +34,8 @@ public class Sphere extends RadialGeometry
         Vector n = p.subtract(center);
         return n.normalize();
     }
-
+    public List<Point> findIntersections(Ray ray)
+    {
+        return null;
+    }
 }

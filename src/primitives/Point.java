@@ -7,6 +7,7 @@ public class Point {
      * A field of type Double3 to specify a point
      */
     final protected Double3 xyz;
+    public static final Point ZERO = new Point(0, 0, 0);
 
     /**
      * point constructor with 3 parameters
@@ -66,9 +67,25 @@ public class Point {
     /**
      *  the function get a point and calculate the distance
      * @param p - the point
-     * @return the distance between this point an the current objec
+     * @return the distance between this point an the current object
      */
     public double distance(Point p){
         return Math.sqrt(this.distanceSquared(p));
     }
+
+    public double getX()
+    {
+        return this.xyz.d1;
+    }
+
+    public double getY()
+    {
+        return this.xyz.d2;
+    }
+
+    public double getZ()
+    {
+        return this.xyz.d3;
+    }
+
 }

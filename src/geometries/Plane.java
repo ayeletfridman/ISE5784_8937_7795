@@ -3,9 +3,12 @@ package geometries;
 import primitives.Double3;
 
 import java.awt.*;
-import primitives.Point;
-import primitives.Vector;
+import java.util.ArrayList;
 
+import primitives.Point;
+import primitives.Ray;
+import primitives.Vector;
+import java.util.List;
 /**
  * A class that represents a plane in space by a point and a vector normal to the plane
  * @author Ayelet and Gili
@@ -57,5 +60,11 @@ public class Plane implements Geometry{
      */
     public Vector getNormal() {
         return normal;
+    }
+
+    @Override
+    public List<Point> findIntersections(Ray ray)
+    {
+       return null;
     }
 }
