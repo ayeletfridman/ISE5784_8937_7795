@@ -33,18 +33,13 @@ class PlaneTest {
     @Test
     void testGetNormal() {
         /// ============ Equivalence Partitions Tests ==============
+        Plane plane = new Plane(new Point(1, 2, 3), new Point(4, 7, 11), new Point(2, -3, 4));
 
-        Point[] pts = { new Point(0, 0, 1), new Point(1, 0, 0), new Point(0, 1, 0) };
-        Plane plan = new Plane(new Point(0, 0, 1), new Point(1, 0, 0), new Point(0, 1, 0));
-        // ensure there are no exceptions
-        assertDoesNotThrow(() -> plan.getNormal(new Point(0, 0, 1)), "");
-        // generate the test result
-        Vector result = plan.getNormal(new Point(0, 0, 1));
-        // ensure |result| = 1
-        assertEquals(1, result.length(), 0.00000001, "Plane's normal is not a unit vector");
-        // ensure the result is orthogonal to all the edges
-        for (int i = 0; i < 2; ++i)
-            assertEquals(result.dotProduct(pts[i].subtract(pts[i == 0 ? 2 : i - 1])),0,0.000001,
-                    "Plane's normal is not orthogonal to one of the edges");
+        double x = 9 / (7 * Math.sqrt(2));
+        double y = 1 / (7 * Math.sqrt(2));
+        double z = (-2) * Math.sqrt(2) / 7;
+
+        assertEquals(new Vector(x, y, z), plane.getNormal(), "normal vector is not returned correctly");
+
     }
 }
