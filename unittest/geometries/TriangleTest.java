@@ -14,6 +14,9 @@ import geometries.Plane;
 import geometries.Polygon;
 
 class TriangleTest {
+
+    final double DELTA = 0.000001;
+
     /**
      * Test method for {@link geometries.Triangle#getNormal(primitives.Point)}.
      */
@@ -27,11 +30,11 @@ class TriangleTest {
         Point[] pts =
                 {new Point(0, 0, 1), new Point(1, 0, 0), new Point(0, 1, 0)};
         // ensure there are no exceptions
-        //assertDoesNotThrow(() -> triangle.getNormal(new Point(0, 0, 1)), "");
+        assertDoesNotThrow(() -> triangle.getNormal(new Point(0, 0, 1)), "");
         // generate the test result
         Vector result = triangle.getNormal(new Point(0, 0, 1));
         // ensure |result| = 1
-        assertEquals(1, result.length(), 0.00000001, "triangle's normal is not a unit vector");
+        assertEquals(1, result.length(), DELTA, "triangle's normal is not a unit vector");
         // ensure the result is orthogonal to all the edges
         for (int i = 0; i < 2; ++i)
             assertTrue(isZero(result.dotProduct(pts[i].subtract(pts[i == 0 ? 2 : i - 1]))),

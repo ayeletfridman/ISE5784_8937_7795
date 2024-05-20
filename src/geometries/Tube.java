@@ -37,7 +37,8 @@ public class Tube extends RadialGeometry
         {
             return p.subtract(this.axisRay.getP0()).normalize();
         }
-        Point o = this.axisRay.getP0().add(this.axisRay.getDir().scale(t));
+       // Point o = this.axisRay.getP0().add(this.axisRay.getDir().scale(t));
+        Point o = this.axisRay.getPoint(t);
         return p.subtract(o).normalize();
     }
 

@@ -30,9 +30,9 @@ class TubeTest {
         //TC01: test that check if there is a vector normal to point on the tube
         assertEquals(tube.getNormal(new Point(1, 0, 6)), new Vector(1, 0, 0), "ERROR: the normal is wrong value");
 
-        // =============== Boundary Values Tests ==================
+        //============ Boundary Values Tests ==================
 
-        //TC11: test that check if the point is in front of the ray's head
+        //TC11: Test that getNormal works for normal that is perpendicular to the axis
         assertEquals(tube.getNormal(new Point(0, 1, 0)), new Vector(0, 1, 0), "ERROR: the normal is wrong value");
     }
 }

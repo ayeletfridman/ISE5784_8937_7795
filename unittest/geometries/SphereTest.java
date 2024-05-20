@@ -25,6 +25,7 @@ class SphereTest {
 
         /// ============ Equivalence Partitions Tests ==============
         //TC01: test that check if there is a vector normal to point on the sphere
+        //subtract between point and the center and normalize
         assertEquals(sphere.getNormal(point), new Vector(1, 0, 0).normalize(), "ERROR: the normal is wrong value");
     }
 
