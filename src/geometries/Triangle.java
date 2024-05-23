@@ -27,6 +27,8 @@ public class Triangle extends Polygon
     @Override
     public List<Point> findIntersections(Ray ray)
     {
+        List<Point> list = plane.findIntersections(ray);
+
         Point p = ray.getP0();
         Vector v = ray.getDir();
         Vector v1 = vertices.get(0).subtract(p);
@@ -40,8 +42,8 @@ public class Triangle extends Polygon
         double d3 = alignZero(v.dotProduct(n3));
         if((d1>0 && d2>0 && d3>0) || (d1<0 && d2<0 && d3<0))
         {
-            List<Point> list = plane.findIntersections(ray);
-            if (list != null)
+
+           // if (list != null)
                 return list;
         }
         return null;

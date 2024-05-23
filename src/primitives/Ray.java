@@ -62,6 +62,8 @@ public class Ray
      */
     public Point getPoint(double t)
     {
+        if(t==0)
+            throw new IllegalArgumentException("vector can't be zero");
         return p0.add(dir.scale(t));
 
     }
