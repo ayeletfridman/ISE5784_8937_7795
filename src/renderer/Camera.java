@@ -77,7 +77,7 @@ public class Camera implements Cloneable {
          * @return The Builder instance for method chaining.
          * @throws IllegalArgumentException if the input dimensions are not valid.
          */
-        public Builder setVPSize(double width, double height) throws IllegalArgumentException {
+        public Builder setVpSize(double width, double height) throws IllegalArgumentException {
             if (width <= 0 || height <= 0) {
                 throw new IllegalArgumentException("Invalid length or width");
             }
@@ -93,7 +93,7 @@ public class Camera implements Cloneable {
          * @return The Builder instance for method chaining.
          * @throws IllegalArgumentException if the input distance is not valid.
          */
-        public Builder setVPDistance(double distance) throws IllegalArgumentException {
+        public Builder setVpDistance(double distance) throws IllegalArgumentException {
             if (distance <= 0) {
                 throw new IllegalArgumentException("Invalid distance");
             }
@@ -197,4 +197,5 @@ public class Camera implements Cloneable {
     public double getViewPlaneWidth() {
         return viewPlaneWidth;
     }
+
 }

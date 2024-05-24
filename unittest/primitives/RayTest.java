@@ -23,11 +23,11 @@ class RayTest {
 
         // =============== Boundary Values Tests ==================+
 
-        //TC01: the distance is positive
-        //assertEquals(p1.add(dir.scale(2)), Point.ZERO, "ERROR: the calculation has to be zero");
 
+        //assertEquals(p1.add(dir.scale(2)), Point.ZERO, "ERROR: the calculation has to be zero");
+        //TC11: the distance is zero
         assertThrows(IllegalArgumentException.class, //
                 () -> new Ray(p1,dir).getPoint(0),
-                "Constructed a polygon with vertex on a side");
+                "ERROR: the calculation of the zero distance is not correct");
     }
 }
