@@ -1,9 +1,6 @@
 package renderer;
 
-import primitives.Point;
-import primitives.Ray;
-import primitives.Util;
-import primitives.Vector;
+import primitives.*;
 
 import java.util.MissingResourceException;
 
@@ -24,6 +21,8 @@ public class Camera implements Cloneable {
     private double viewPlaneWidth;
     private double viewPlaneHeight;
     private double viewPlaneDistance;
+    private ImageWriter imageWriter;
+    private RayTracerBase rayTracer;
 
     // Private constructor to enforce the use of the builder pattern
     private Camera() {}
@@ -36,12 +35,65 @@ public class Camera implements Cloneable {
     public static Builder getBuilder() { return new Builder(); }
 
     /**
+     * Sets image writer in builder pattern
+     *
+     * @param iw writer
+     * @return Camera that results
+     */
+    public Camera setImageWriter(ImageWriter iw) {
+        this.imageWriter = iw;
+        return this;
+    }
+
+    /**
+     * Sets ray tracer in builder pattern
+     *
+     * @param rt tracer
+     * @return Camera that results
+     */
+    public Camera setRayTracer(RayTracerBase rt) {
+        this.rayTracer = rt;
+        return this;
+    }
+
+
+    /**
      * Builder class for constructing Camera instances with specified parameters.
      */
     public static class Builder {
 
         // Private instance of the Camera class being built
         private final Camera camera = new Camera();
+
+        /**
+         * Sets the image writer of the Camera.
+         *
+         * @param iw the ImageWriter to set
+         * @return the Builder object for chaining
+         */
+        public Builder setImageWriter(ImageWriter iw) {
+            if (iw == null) {
+                throw new IllegalArgumentException("ImageWriter cannot be null");
+            }
+            this.camera.imageWriter = iw;
+            return this;
+        }
+
+        /**
+         * Sets the ray tracer of the Camera.
+         *
+         * @param rt the RayTracerBase to set
+         * @return the Builder object for chaining
+         */
+        public Builder setRayTracer(RayTracerBase rt) {
+            if (rt == null) {
+                throw new IllegalArgumentException("RayTracerBase cannot be null");
+            }
+            this.camera.rayTracer = rt;
+            return this;
+        }
+
+
 
         /**
          * Set the location of the camera.
@@ -131,9 +183,14 @@ public class Camera implements Cloneable {
             if (camera.viewPlaneDistance < 0) {
                 throw new IllegalArgumentException("Invalid distance");
             }
+            // Check if imageWriter and rayTracer are set
+            if (camera.imageWriter == null || camera.rayTracer == null) {
+               throw new MissingResourceException(missingArgMsg, className, "ImageWriter or RayTracerBase is missing");
+            }
+
 
             // Calculate the view plane center point
-           // camera.viewPlanePC = camera.p0.add(camera.vTo.scale(camera.viewPlaneDistance));
+            // camera.viewPlanePC = camera.p0.add(camera.vTo.scale(camera.viewPlaneDistance));
 
             // Attempt to clone the camera instance
             try {
@@ -142,6 +199,8 @@ public class Camera implements Cloneable {
                 throw new RuntimeException(e);
             }
         }
+
+
     } // end of Builder class
 
     /**
@@ -156,10 +215,10 @@ public class Camera implements Cloneable {
     public Ray constructRay(int nX, int nY, int j, int i) {
         Point pCenter = p0.add(vTo.scale(viewPlaneDistance));
 
-        double Ry = (double) viewPlaneHeight / nY;
+        double Ry = (double) viewPlaneHeight / nY;//size of one pixel
         double Rx = (double) viewPlaneWidth / nX;
 
-        double yI = -(i - (double) (nY - 1) / 2) * Ry;
+        double yI = -(i - (double) (nY - 1) / 2) * Ry;//distance from the center
         double xJ = (j - (double) (nX - 1) / 2) * Rx;
 
         Point pIJ = pCenter;
@@ -197,5 +256,65 @@ public class Camera implements Cloneable {
     public double getViewPlaneWidth() {
         return viewPlaneWidth;
     }
+
+    /**
+
+     Renders the image using the configured ray tracer and image writer.
+
+     @throws UnsupportedOperationException If the image writer or ray tracer is missing.
+     */
+    public Camera renderImage() {
+        if (this.imageWriter == null)
+            throw new UnsupportedOperationException("Missing imageWriter");
+        if (this.rayTracer == null)
+            throw new UnsupportedOperationException("Missing rayTracerBase");
+
+        for (int i = 0; i < this.imageWriter.getNy(); i++) {
+            for (int j = 0; j < this.imageWriter.getNx(); j++) {
+                Color color = castRay(j, i);
+                this.imageWriter.writePixel(j, i, color);
+            }
+        }
+        return this;
+    }
+
+    /*
+     * printGrid creates a grid of lines
+     * want to color the pixels where the grid appears in them, leave the other pixels alone
+     * */
+    public Camera printGrid(int interval, Color color) {
+        double nX = imageWriter.getNx();
+        double nY = imageWriter.getNy();
+        for (int i = 0; i < nY; i++) {
+            for (int j = 0; j < nX; j++) {
+                if (i % interval == 0 || j % interval == 0) {
+                    imageWriter.writePixel(j, i, color);
+                }
+            }
+        }
+        return this;
+    }
+
+    public Camera writeToImage() {
+        if (imageWriter == null) {
+            throw new MissingResourceException("ImageWriter field cannot be null", Camera.class.getName(), "");
+        }
+        // delegates the appropriate method of the ImageWriter.
+        imageWriter.writeToImage();
+        return this;
+    }
+    /**
+
+     Casts a ray through a specified pixel and returns the color of the intersection point.
+     @param j The x-coordinate of the pixel.
+     @param i The y-coordinate of the pixel.
+     @return The color of the intersection point.
+     */
+    private Color castRay(int j, int i) {
+        Ray ray = constructRay(this.imageWriter.getNx(),this.imageWriter.getNy(),j,i);
+        return this.rayTracer.traceRay(ray);
+    }
+
+
 
 }

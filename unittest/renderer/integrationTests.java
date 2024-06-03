@@ -6,6 +6,8 @@ import geometries.*;
 import org.junit.jupiter.api.Test;
 import primitives.*;
 import renderer.Camera;
+import scene.Scene;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,16 +18,21 @@ import java.util.List;
 
 
 class integrationTests {
-
+    private final Scene scene= new Scene("Test");
     // Camera builder used for all tests with a default setup
     private final Camera.Builder cameraBuilder = Camera.getBuilder()
+            .setImageWriter(new ImageWriter("output",100,100))
+            .setRayTracer(new SimpleRayTracer(scene))
             .setLocation(Point.ZERO)
             .setDirection(new Vector(0, 0, -1), new Vector(0, 1, 0))
             .setVpSize(3,3)
             .setVpDistance(1);
+
+
     private Camera camera = cameraBuilder.setVpSize(3, 3).build();
 
-    int clacIntersecs(Geometry geometry){
+
+    private int clacIntersecs(Geometry geometry){
 
         int intersections = 0;
         for (int i = 0; i < 3; i++){
