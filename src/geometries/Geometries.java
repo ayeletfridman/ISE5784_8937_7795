@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Geometries implements Intersectable {
+public class Geometries extends Intersectable {
     private final List<Intersectable> intersections = new LinkedList<Intersectable>();
 
     /**
@@ -42,23 +42,21 @@ public class Geometries implements Intersectable {
      * @return list of intersection points
      */
     @Override
-    public List<Point> findIntersections(Ray ray) {
-        List<Point> result = null;
-        //for each geometry in composite check intersection points
-        for (var item: intersections ) {
-
-            // get intersection point for a specific geometry in composite
-            List<Point> itemList = item.findIntersections(ray);
-
-            // points were found , add to composite's total intersection points list
-            if(itemList != null) {
-                if(result==null){
-                    result= new LinkedList<>();
-                }
-                result.addAll(itemList);
+    public List<GeoPoint> findGeoIntersectionsHelper(Ray ray)
+    {
+        // create list of points
+        List<GeoPoint> points = null;
+        //find intersections for each shape in geometries
+        for(Intersectable shape: intersections)
+        {
+            List<GeoPoint> temPoints = shape.findGeoIntersections(ray);
+            if(temPoints != null)
+            {
+                if(points == null)
+                    points = new LinkedList<>();
+                points.addAll(temPoints);// add the new point to the list
             }
         }
-        // return list of points - null if no intersection points were found
-        return result;
+        return points;
     }
 }

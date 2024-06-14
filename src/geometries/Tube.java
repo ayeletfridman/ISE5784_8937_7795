@@ -42,8 +42,8 @@ public class Tube extends RadialGeometry
         return p.subtract(o).normalize();
     }
 
-    @Override
-    public List<Point> findIntersections(Ray ray) {
-        return List.of();
+    public List<GeoPoint> findGeoIntersectionsHelper(Ray ray)
+    {
+        return null;
     }
 }
