@@ -295,6 +295,7 @@ public class Camera implements Cloneable {
         return this;
     }
 
+
     public Camera writeToImage() {
         if (imageWriter == null) {
             throw new MissingResourceException("ImageWriter field cannot be null", Camera.class.getName(), "");
