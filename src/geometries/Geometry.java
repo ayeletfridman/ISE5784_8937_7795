@@ -13,16 +13,30 @@ public abstract class Geometry extends Intersectable {
 
     public abstract Vector getNormal(Point p);
 
+    /**
+     *
+     * the function return the emissiom
+     * @return emission
+     */
     public Color getEmission() {
         return emission;
     }
 
+    /**
+     * the function update the geometry with the emmision and return it
+     * @param emission
+     * @return this
+     */
     public Geometry setEmission(Color emission) {
 
         this.emission = emission;
         return this;
     }
 
+    /**
+     *
+     * @return material
+     */
     public Material getMaterial() {
         return material;
     }

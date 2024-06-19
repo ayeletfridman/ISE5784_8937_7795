@@ -54,6 +54,11 @@ public class Scene {
         return  this;
     }
 
+    /**
+     * the function return the scene with the light
+     * @param lights
+     * @return
+     */
     public Scene setLights(List<LightSource> lights) {
         this.lights = lights;
         return this;

@@ -48,6 +48,10 @@ public class Triangle extends Polygon
         double d2 = alignZero(v.dotProduct(n2));
         double d3 = alignZero(v.dotProduct(n3));
         // calculate the dot products of the ray direction with the three normals
+
+        ///If all the values are positive, it means the ray intersects the triangle from the same direction for all the edges.
+        //If all the values are negative, it means the ray intersects the triangle from the opposite direction for all the edges.
+        //If any of the values differ in sign from the others, it means the ray does not intersect the triangle.
         if((d1>0 && d2>0 && d3>0) || (d1<0 && d2<0 && d3<0))
         {
             List<GeoPoint> list = plane.findGeoIntersections(ray);

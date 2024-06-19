@@ -23,18 +23,30 @@ public abstract class Intersectable {
 
     protected abstract List<GeoPoint> findGeoIntersectionsHelper(Ray ray);
 
-
+    /**
+     * class that save the point and the geometry
+     */
     public static class GeoPoint {
 
         public Geometry geometry;
         public Point point;
 
+        /**
+         * constractor with param
+         * @param geometry
+         * @param point
+         */
         public GeoPoint(Geometry geometry, Point point)
         {
             this.geometry = geometry;
             this.point = point;
         }
 
+        /**
+         * check if the objects are eguals
+         * @param obj
+         * @return
+         */
         @Override
         public boolean equals(Object obj)
         {
