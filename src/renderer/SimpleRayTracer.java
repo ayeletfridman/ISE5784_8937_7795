@@ -13,6 +13,8 @@ import static primitives.Util.alignZero;
 
 public class SimpleRayTracer extends RayTracerBase{
 
+    private static final double DELTA = 0.1;
+
     /**
      * Constructs with one param.
      *
@@ -74,16 +76,21 @@ public class SimpleRayTracer extends RayTracerBase{
             Vector l = lightSource.getL(gp.point);
             double nl = alignZero(n.dotProduct(l));
             if (nl * nv > 0)
-            { // sign(nl) == sing(nv)
-                Color iL = lightSource.getIntensity(gp.point);
-                // Calculate the diffuse component of the material
-                color = color.add(iL.scale(calcDiffusive(material, nl)),
-                        // Calculate the specular component of the material
-                        iL.scale(calcSpecular(material, n, l, nl, v)));
+            {// sign(nl) == sing(nv)
+                if (unshaded(gp, l, n, nl, lightSource))
+                {
+                    Color iL = lightSource.getIntensity(gp.point);
+                    // Calculate the diffuse component of the material
+                    color = color.add(iL.scale(calcDiffusive(material, nl)),
+                            // Calculate the specular component of the material
+                            iL.scale(calcSpecular(material, n, l, nl, v)));
+                }
             }
         }
         return color;
     }
+
+
 
     /**
      * Calculates the diffuse component of the material.
@@ -112,5 +119,38 @@ public class SimpleRayTracer extends RayTracerBase{
         Vector r = l.subtract(n.scale(nl*2)).normalize();
         // Calculate the specular reflection coefficient of the material and scale by the specular coefficient of the material
         return mat.Ks.scale(Math.pow(Math.max(0, v.scale(-1).dotProduct(r)), mat.nShininess));
+    }
+
+    /**
+     * Checks if the given geometric point is unshaded by the light source.
+     * @param gp        The geometric point to check.
+     * @param l         The direction of the light.
+     * @param n         The normal vector to the surface at the geometric point.
+     * @param nl        The dot product of the normal vector and the light direction.
+     * @param light     The light source.
+     * @return          {@code true} if the point is unshaded, {@code false} otherwise.
+     */
+    private boolean unshaded(GeoPoint gp, Vector l, Vector n, double  nl, LightSource light)
+    {
+        // Invert the light direction to point from the point to the light source
+        Vector lightDirection = l.scale(-1);
+        Vector epsVector = n.scale(nl < 0 ? DELTA : -1*DELTA);
+        Point point = gp.point.add(epsVector);
+        // Create a ray from the shifted point to the light source
+        Ray lightRay = new Ray(point, lightDirection);
+        // Find the intersections between the ray and the geometries in the scene
+        List<GeoPoint> intersections = scene.geometries.findGeoIntersections(lightRay);
+        // there is no intresction
+        if (intersections == null)
+            return true;
+        // the distance between the light and the point
+        double distance = light.getDistance(point);
+        // Check if any of the intersections are closer to the light source than the shifted point
+        for (GeoPoint geoPoint : intersections)
+        {
+            if(light.getDistance(geoPoint.point) < distance)
+                return false;
+        }
+        return true;
     }
 }

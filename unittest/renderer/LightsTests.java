@@ -214,7 +214,7 @@ public class LightsTests {
 
         scene1.geometries.add(sphere);
         scene1.lights.add(new DirectionalLight(new Color(150, 0, 0), new Vector(-1, 1, -1)));
-        scene1.lights.add(new PointLight(new Color(400, 400, 0), new Point(0, 30, 10)).setKl(0.000007).setKq(0.0000003));
+        scene1.lights.add(new SpotLight(new Color(400, 400, 0), new Point(0, 30, 10),new Vector(-1,-1,-2)).setKl(0.000007).setKq(0.0000003));
         scene1.lights.add(new SpotLight(new Color(0, 350, 0), new Point(-100, -70, 50), new Vector(1, -1, -2))
                 .setKl(0.0000000001).setKq(0.000000001));
 

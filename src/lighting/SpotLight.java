@@ -15,6 +15,7 @@ public class SpotLight extends PointLight
      */
     private Vector direction;
 
+
     /**
      * Constructs a new SpotLight object with the specified intensity, position, and direction.
      * @param intensity The color intensity of the light.
