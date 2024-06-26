@@ -10,6 +10,7 @@ abstract class Light
      * Represents the intensity of a light source.
      */
     private Color intensity;
+    private double radius = 0;//the radius of the light
 
     /**
      * Constructs a new Light object with the specified intensity.
@@ -27,6 +28,13 @@ abstract class Light
         return intensity;
     }
 
+    /**
+     * @return The radius of the light.
+     */
+    public double getRadius()
+    {
+        return radius;
+    }
 
 
 }

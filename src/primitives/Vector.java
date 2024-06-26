@@ -102,4 +102,20 @@ public class Vector extends Point {
         return newVector.scale(1 / this.length());
     }
 
+    /**
+     * calculate the orthogonal vector
+     * @return orthogonal vector
+     */
+    public Vector OrthogonalVector()
+    {
+        if(!Util.isZero(getX())||!Util.isZero(getY()))// if x != 0 or y != 0
+            return new Vector(-getY(),getX(),0);
+        else
+        {
+            if(Util.isZero(getX()))// x == 0
+                return new Vector(0,-getZ(),getZ());
+            else//y==0
+                return new Vector(-getZ(),0,getX());
+        }
+    }
 }

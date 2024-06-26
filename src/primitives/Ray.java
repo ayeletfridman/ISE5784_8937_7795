@@ -1,10 +1,14 @@
-package primitives;
 
-import java.util.List;
+package primitives;
+import geometries.Intersectable.GeoPoint;
 
 import static primitives.Util.isZero;
-import geometries.Intersectable.GeoPoint;
-import geometries.Intersectable.GeoPoint;
+import static primitives.Util.*;
+import java.lang.Object;
+import java.util.List;
+
+
+
 public class Ray
 {
     /**
@@ -15,7 +19,7 @@ public class Ray
      * the direction of the ray
      */
     final Vector dir;
-
+    private static final double DELTA = 0.1;
 
     /**
      * Ray constructor with to parameters
@@ -28,17 +32,22 @@ public class Ray
         this.dir = dir.normalize();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        return (obj instanceof Ray other)
-                && this.p0.equals(other.p0)
-                && this.dir.equals(other.dir);
+    public Ray(Point p0, Vector dir, Vector n)
+    {
+        this.dir = dir.normalize();
+        Vector epsVector = n.scale(n.dotProduct(this.dir) > 0 ? DELTA : -DELTA);
+        this.p0 = p0.add(epsVector);
     }
 
+
     @Override
-    public String toString(){
-        return p0.toString() + ", " + dir.toString();
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj instanceof Ray other)
+            return p0.equals(other.p0) && dir.equals(other.dir);
+        return false;
     }
 
     /**
@@ -61,19 +70,13 @@ public class Ray
     /**
      * Calculation of a point on ray
      * @param t
-     * @return the point
+     * @return
      */
     public Point getPoint(double t)
     {
-        if(t==0)
-            throw new IllegalArgumentException("vector can't be zero");
-        return p0.add(dir.scale(t));
+        return isZero(t) ? p0 :p0.add(dir.scale(t));
+    }
 
-    }
-    public Point findClosestPoint(List<Point> points) {
-        return points == null || points.isEmpty() ? null
-                : findClosestGeoPoint(points.stream().map(p -> new GeoPoint(null, p)).toList()).point;
-    }
     /**
      Finds the closest point to a given point within a list of points.
      @param points The list of points to search for the closest point.
@@ -85,7 +88,7 @@ public class Ray
         double dis = Double.MAX_VALUE;
         double tempDis;
 
-        if(points.isEmpty()) //check if the list is empty
+        if(points.isEmpty()|| points == null) //check if the list is empty
             return null;
 
         for (GeoPoint gPoint : points) //going through all the points in the list
@@ -101,5 +104,16 @@ public class Ray
     }
 
 
+    public Point findClosestPoint(List<Point> points) {
+        return points == null || points.isEmpty() ? null
+                : findClosestGeoPoint(points.stream().map(p -> new GeoPoint(null, p)).toList()).point;
+    }
+
+
+
+    @Override
+    public String toString() {
+        return "Ray [p0=" + p0 + ", dir=" + dir + "]";
+    }
 
 }
