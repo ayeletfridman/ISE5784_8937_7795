@@ -49,7 +49,7 @@ public class ReflectionRefractionTests {
 
     /** Produce a picture of a sphere lighted by a spot light */
     @Test
-    public void twoSpheresOnMirrors() {
+    public void twoSpheresOnMirrors()  {
         scene.geometries.add(
                 new Sphere(400d,new Point(-950, -900, -1000)).setEmission(new Color(0, 50, 100))
                         .setMaterial(new Material().setKd(0.25).setKs(0.25).setShininess(20)
