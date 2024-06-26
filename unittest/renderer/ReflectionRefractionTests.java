@@ -101,4 +101,49 @@ public class ReflectionRefractionTests {
                 .renderImage()
                 .writeToImage();
     }
+    @Test
+    public void newS() {
+        scene.geometries.add( //
+                new Triangle(new Point(-170, -170, -115), new Point(140, -170, -135), new Point(90, 25, -150)) //
+                        .setMaterial(new Material().setKs(0.8).setShininess(60)).setEmission(new Color(140, 70, 20)), //
+
+                new Triangle(new Point(-170, -170, -115), new Point(-80, 20, -140), new Point(90, 25, -150)) //
+                        .setMaterial(new Material().setKs(0.8).setShininess(60)).setEmission(new Color(140, 70, 20)),//
+
+                new Sphere(25d ,new Point(70, 70, -11)) //
+                        .setEmission(new Color(100, 150, 80)) //
+                        .setMaterial(new Material().setKd(0.5).setKs(0.5).setShininess(30)), //
+
+                new Sphere(30d ,new Point(0, -14, 0)) //
+                        .setEmission(new Color(BLUE)) //
+                        .setMaterial(new Material().setKd(0.2).setKs(0.3).setShininess(30).setKt(0.6)), //
+
+
+                new Sphere(17d ,new Point(-20, 24, 13)) //
+                        .setEmission(new Color(BLUE)) //
+                        .setMaterial(new Material().setKd(0.5).setKs(0.5).setShininess(30)), //
+
+                new Sphere(17d ,new Point(20, 24, 13)) //
+                        .setEmission(new Color(BLUE)) //
+                        .setMaterial(new Material().setKd(0.5).setKs(0.5).setShininess(30)), //
+
+                new Sphere(5d, new Point(0, -16, 50)).setEmission(new Color(20, 20, 20)) //
+                        .setMaterial(new Material().setKd(0.5).setKs(0.5).setShininess(100))
+
+
+
+        );
+        scene.lights.add( //
+                new SpotLight(new Color(700, 400, 400), new Point(40, 40, 115), new Vector(-1, -1, -4)) //
+                        .setKl(4E-4).setKq(2E-5));
+        /*** scene.lights.add( //
+         new DirectionalLight(new Color(100, 600, 0), new Vector(-1, -1, -2))); //**/
+
+        cameraBuilder.setLocation(new Point(0, 0, 1000)).setVpDistance(1000)
+                .setVpSize(200, 200)
+                .setImageWriter(new ImageWriter("newSone", 600, 600))
+                .build()
+                .renderImage()
+                .writeToImage();
+    }
 }
