@@ -139,40 +139,31 @@ public class SimpleRayTracer extends RayTracerBase{
     }
 
     /**
-     * Checks if the given geometric point is unshaded by the light source.
-     * @param gp        The geometric point to check.
-     * @param l         The direction of the light.
-     * @param n         The normal vector to the surface at the geometric point.
-     * @param nl        The dot product of the normal vector and the light direction.
-     * @param light     The light source.
-     * @return          {@code true} if the point is unshaded, {@code false} otherwise.
+     * Checks if a given point is unshaded by finding intersections between the point and the light source.
+     *
+     * @param gp The geometric point to check for shading.
+     * @param l The direction from the point towards the light source.
+     * @param n The normal vector at the point.
+     * @param light The light source.
+     * @param nv The dot product between the normal vector and the light direction.
+     * @return {@code true} if the point is unshaded, {@code false} otherwise.
      */
-    private boolean unshaded(GeoPoint gp, Vector l, Vector n, double  nl, LightSource light)
-    {
-        if(gp.geometry.getMaterial().Kt == new Double3(0,0,0))
-            return false;
-        // Invert the light direction to point from the point to the light source
-        Vector lightDirection = l.scale(-1);
-        Vector epsVector = n.scale(nl < 0 ? DELTA : -1*DELTA);
+    private boolean unshaded(GeoPoint gp, Vector l, Vector n, double nv, LightSource light) {
+        Vector lightDirection = l.scale(-1); // from point to light source
+        Vector epsVector = n.scale(nv < 0 ? DELTA : -DELTA);
         Point point = gp.point.add(epsVector);
-        // Create a ray from the shifted point to the light source
         Ray lightRay = new Ray(point, lightDirection);
-        // Find the intersections between the ray and the geometries in the scene
         List<GeoPoint> intersections = scene.geometries.findGeoIntersections(lightRay);
-        // there is no intresction
         if (intersections == null)
             return true;
-        // the distance between the light and the point
-        double distance = light.getDistance(point);
-        // Check if any of the intersections are closer to the light source than the shifted point
-        for (GeoPoint geoPoint : intersections)
-        {
-            if(light.getDistance(geoPoint.point) < distance)
+        double lightDistance = light.getDistance(gp.point);
+        for (GeoPoint gp1 : intersections) {
+            if (Util.alignZero(gp1.point.distance(gp.point) - lightDistance) <= 0)
+                //&& gp1.geometry.getMaterial().kT == 0)
                 return false;
         }
         return true;
     }
-
     private GeoPoint findClosestIntersection(Ray ray)
     {
         List <GeoPoint> intersections = scene.geometries.findGeoIntersections(ray);
