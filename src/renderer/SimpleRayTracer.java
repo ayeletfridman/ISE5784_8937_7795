@@ -159,7 +159,7 @@ public class SimpleRayTracer extends RayTracerBase{
         double lightDistance = light.getDistance(gp.point);
         for (GeoPoint gp1 : intersections) {
             if (Util.alignZero(gp1.point.distance(gp.point) - lightDistance) <= 0)
-                //&& gp1.geometry.getMaterial().kT == 0)
+
                 return false;
         }
         return true;

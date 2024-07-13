@@ -5,9 +5,11 @@ package renderer;
 
 import static java.awt.Color.*;
 
+import geometries.Plane;
 import org.junit.jupiter.api.Test;
 
 import geometries.Sphere;
+import geometries.Polygon;
 import geometries.Triangle;
 import lighting.AmbientLight;
 import lighting.SpotLight;
@@ -128,7 +130,12 @@ public class ReflectionRefractionTests {
                         .setMaterial(new Material().setKd(0.5).setKs(0.5).setShininess(30)), //
 
                 new Sphere(5d, new Point(0, -16, 50)).setEmission(new Color(20, 20, 20)) //
-                        .setMaterial(new Material().setKd(0.5).setKs(0.5).setShininess(100))
+                        .setMaterial(new Material().setKd(0.5).setKs(0.5).setShininess(100)),
+
+                new Plane(new Point (-170, -150, -115),new Vector(1,0,1) ) // הגדלתי את ה-y ב-40 והרחבתי את ה-x ב-80 לצד שמאל)
+                .setMaterial(new Material().setKd(0.6).setKs(0.4).setShininess(25))
+                .setEmission(new Color(gray))
+
 
 
 
