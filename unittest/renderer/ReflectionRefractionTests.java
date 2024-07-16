@@ -6,6 +6,7 @@ package renderer;
 import static java.awt.Color.*;
 
 import geometries.Plane;
+import lighting.PointLight;
 import org.junit.jupiter.api.Test;
 
 import geometries.Sphere;
@@ -140,9 +141,16 @@ public class ReflectionRefractionTests {
 
 
         );
+
         scene.lights.add( //
-                new SpotLight(new Color(700, 400, 400), new Point(40, 40, 115), new Vector(-1, -1, -4)) //
-                        .setKl(4E-4).setKq(2E-5));
+                new SpotLight(new Color(700, 400, 400), new Point(30, 30, 115), new Vector(-1, -1, -4)) //
+                        .setKl(4E-4).setKq(2E-5).setRadius(13));
+
+//
+//        scene.lights.add( //
+//                new PointLight(new Color(700, 400, 400), new Point(30, 30, 115)) //
+//                        .setKl(4E-4).setKq(2E-5).setRadius(15));
+
         /*** scene.lights.add( //
          new DirectionalLight(new Color(100, 600, 0), new Vector(-1, -1, -2))); //**/
 

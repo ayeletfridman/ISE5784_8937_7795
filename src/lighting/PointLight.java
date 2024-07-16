@@ -15,6 +15,7 @@ public class PointLight extends Light implements LightSource
      * the position of the light
      */
     private Point position;
+    private double radius;
     /**
      * attenuation coefficients
      */
@@ -28,6 +29,16 @@ public class PointLight extends Light implements LightSource
     public PointLight(Color intensity, Point position) {
         super(intensity);
         this.position = position;
+    }
+
+    @Override
+    public double getRadius() {
+        return radius;
+    }
+
+    public PointLight setRadius(double radius) {
+        this.radius = radius;
+        return this;
     }
 
     @Override
@@ -59,6 +70,21 @@ public class PointLight extends Light implements LightSource
     public PointLight setKl(double kL) {
         this.Kl = kL;
         return this;
+    }
+    public Point getPosition() {
+        return position;
+    }
+
+    public double getKq() {
+        return Kq;
+    }
+
+    public double getKl() {
+        return Kl;
+    }
+
+    public double getKc() {
+        return Kc;
     }
 
     /**

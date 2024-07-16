@@ -1,5 +1,6 @@
 package renderer;
 
+import geometries.Intersectable;
 import primitives.Color;
 import primitives.Point;
 import primitives.Ray;
@@ -30,6 +31,7 @@ public class SimpleRayTracer extends RayTracerBase{
      */
     public SimpleRayTracer(Scene scene) {
         super(scene);
+        this.numOfRays=55;
     }
 
     /**
@@ -75,40 +77,123 @@ public class SimpleRayTracer extends RayTracerBase{
      * @param ray The ray used for the calculation.
      * @return The resulting color after applying the local effects.
      */
-    private Color calcLocalEffects(GeoPoint gp, Ray ray, Double3 k)
-    {
-        // Get the emission color of the geometry at the geometric point
+//    private Color calcLocalEffects(GeoPoint gp, Ray ray, Double3 k)
+//    {
+//        // Get the emission color of the geometry at the geometric point
+//        Color color = gp.geometry.getEmission();
+//        // Calculate the direction vector of the ray
+//        Vector v = ray.getDir ();
+//        // Calculate the surface normal at the geometric point
+//        Vector n = gp.geometry.getNormal(gp.point);
+//        // Calculate the dot product of the normal and the direction vector
+//        double nv = alignZero(n.dotProduct(v));
+//        // If the dot product is close to zero, return the emission color
+//        if (nv == 0)
+//            return color;
+//        Material material = gp.geometry.getMaterial();
+//        // Iterate over all light sources in the scene
+//        for (LightSource lightSource : scene.lights)
+//        {
+//            // Get the direction vector from the geometric point to the light source
+//            Vector l = lightSource.getL(gp.point);
+//            double nl = alignZero(n.dotProduct(l));
+//            if (nl * nv > 0)
+//            {// sign(nl) == sing(nv)
+//                Double3 ktr = transparency(gp, lightSource, l, n);
+//                if (!ktr.product(k).lowerThan(MIN_CALC_COLOR_K))
+//                {
+//                    Color iL = lightSource.getIntensity(gp.point).scale(ktr);
+//                    // Calculate the diffuse component of the material
+//                    color = color.add(iL.scale(calcDiffusive(material, nl)),iL.scale(calcSpecular(material, n, l, nl, v)));
+//                    // Calculate the specular component of the material
+//                }
+//            }
+//        }
+//        return color;
+//    }
+    private Color calcLocalEffects(GeoPoint gp, Ray ray, Double3 k) {
         Color color = gp.geometry.getEmission();
-        // Calculate the direction vector of the ray
-        Vector v = ray.getDir ();
-        // Calculate the surface normal at the geometric point
+        Vector v = ray.getDir();
         Vector n = gp.geometry.getNormal(gp.point);
-        // Calculate the dot product of the normal and the direction vector
         double nv = alignZero(n.dotProduct(v));
-        // If the dot product is close to zero, return the emission color
         if (nv == 0)
             return color;
         Material material = gp.geometry.getMaterial();
-        // Iterate over all light sources in the scene
-        for (LightSource lightSource : scene.lights)
-        {
-            // Get the direction vector from the geometric point to the light source
+
+        for (LightSource lightSource : scene.lights) {
             Vector l = lightSource.getL(gp.point);
             double nl = alignZero(n.dotProduct(l));
-            if (nl * nv > 0)
-            {// sign(nl) == sing(nv)
+            if (nl * nv > 0) {
                 Double3 ktr = transparency(gp, lightSource, l, n);
-                if (!ktr.product(k).lowerThan(MIN_CALC_COLOR_K))
-                {
-                    Color iL = lightSource.getIntensity(gp.point).scale(ktr);
-                    // Calculate the diffuse component of the material
-                    color = color.add(iL.scale(calcDiffusive(material, nl)),iL.scale(calcSpecular(material, n, l, nl, v)));
-                    // Calculate the specular component of the material
+                if (!ktr.product(k).lowerThan(MIN_CALC_COLOR_K)) {
+                    Color iL;
+                    if (lightSource instanceof SpotLight || lightSource instanceof PointLight) {
+                        iL = calculateSoftShadow(lightSource, gp);
+                    } else {
+                        iL = lightSource.getIntensity(gp.point);
+                    }
+                    iL = iL.scale(ktr);
+                    color = color.add(
+                            iL.scale(calcDiffusive(material, nl)),
+                            iL.scale(calcSpecular(material, n, l, nl, v))
+                    );
                 }
             }
         }
         return color;
     }
+
+    /**
+     * Calculates the soft shadow effect by averaging the light intensity
+     * from multiple rays cast from a point on the geometry towards a spotlight.
+     *
+     * @param light The spotlight source.
+     * @param gp The GeoPoint representing the intersection point on the geometry.
+     * @return The average light intensity considering the shadows.
+     */
+    private Color calculateSoftShadow(LightSource light, GeoPoint gp) {
+        // Calculate the direction from the intersection point to the light source
+        Vector lightDirection = light.getL(gp.point);
+
+        // Get the normal vector at the intersection point
+        Vector normal = gp.geometry.getNormal(gp.point);
+
+        // Construct multiple rays from the intersection point towards the light source
+        List<Ray> lightRays = constructRaysToLight(
+                light,
+                lightDirection,
+                normal,
+                gp
+        );
+
+        // Initialize the total light intensity to black (no intensity)
+        Color totalIntensity = Color.BLACK;
+        // Initialize a counter to keep track of the number of unblocked rays
+        int count = 0;
+
+        // Iterate over each constructed ray
+        for (Ray ray : lightRays) {
+            // Get the direction of the current ray
+            Vector l = ray.getDir();
+            // Calculate the dot product of the normal vector and the ray direction
+            double nl = alignZero(normal.dotProduct(l));
+            // Only consider rays that are in the same direction as the normal
+            if (nl > 0) {
+                // Find the closest intersection point of the current ray with the scene
+                GeoPoint intersection = findClosestIntersection(ray);
+                // Check if the ray is not blocked or if the blocking intersection is farther than the light source
+                if (intersection == null || intersection.point.distance(gp.point) > light.getDistance(gp.point)) {
+                    // Add the light intensity at the ray's origin point to the total intensity
+                    totalIntensity = totalIntensity.add(light.getIntensity(ray.getP0()));
+                    // Increment the count of unblocked rays
+                    count++;
+                }
+            }
+        }
+        // Return the average light intensity if there are unblocked rays, otherwise return black
+        return count == 0 ? Color.BLACK : totalIntensity.scale(1.0 / count);
+    }
+
     /**
      * Calculates the diffuse component of the material.
      * @param mat The material for which to calculate the diffuse component.
