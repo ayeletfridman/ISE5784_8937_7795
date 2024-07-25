@@ -39,6 +39,19 @@ public class Ray
         this.p0 = p0.add(epsVector);
     }
 
+    /**
+     * Constructs a new Ray object with the given direction and starting point.
+     *
+     * @param vecDir The direction vector of the ray.
+     * @param p      The starting point of the ray.
+     * @param n      The normal vector of the ray.
+     */
+    public Ray(Vector vecDir, Point p , Vector n) {
+        dir = vecDir.normalize();
+        Vector delta = n.scale(Util.alignZero(n.dotProduct(dir) > 0 ? DELTA : -DELTA));
+        p0 = p.add(delta);
+    }
+
 
     @Override
     public boolean equals(Object obj)

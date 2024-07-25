@@ -4,6 +4,8 @@ import primitives.Color;
 import primitives.Point;
 import primitives.Vector;
 
+import java.util.List;
+
 /**
  * The LightSource interface represents a light source in a 3D scene.
  * It defines methods for calculating the intensity and direction of the light at a given point.
@@ -37,4 +39,9 @@ public interface LightSource
      * @return the radius of the light
      */
     double getRadius();
+
+    public List<Vector> getLCircle(Point p, double r, int amount);
+
+
+    List<Point> getGridPoints(Vector l);
 }

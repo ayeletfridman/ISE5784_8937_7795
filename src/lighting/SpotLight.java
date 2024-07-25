@@ -1,10 +1,12 @@
 package lighting;
 
 import geometries.Geometry;
-import primitives.Color;
-import primitives.Point;
-import primitives.Ray;
-import primitives.Vector;
+import primitives.*;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import static primitives.Util.isZero;
 //
 ///**
 // * The SpotLight class represents a spotlight in a 3D scene.
@@ -41,11 +43,31 @@ import primitives.Vector;
 
 public class SpotLight extends PointLight {
     private Vector direction;
+    /**
+     * The points on the target area grid
+     */
+    private List<Point> targetPoints = null;
+
+    public List<Point> getTargetPoints() {
+        return targetPoints;
+    }
 
     public SpotLight(Color intensity, Point position, Vector direction) {
         super(intensity, position);
         this.direction = direction.normalize();
         setRadius(0); // ברירת מחדל ללא רדיוס
+    }
+
+    public SpotLight(Color intensity, Point position, Vector direction, double radius) {
+        super(intensity, position, radius);
+        this.direction = direction.normalize();
+        Vector v = !(isZero(direction.getX()) || isZero(direction.getY())) ? new Vector(direction.getY(), -direction.getX(), 0) :
+                new Vector(1, 1, 0).normalize();
+        if (radius == 0) {
+            targetPoints = new LinkedList<>();
+            targetPoints.add(position);
+        } else
+            targetPoints = BlackBoard.constructCircleBlackBoard(BlackBoard.getMAX_CELLS(), position, v, direction.crossProduct(v), radius);
     }
 
 
@@ -64,5 +86,10 @@ public class SpotLight extends PointLight {
     }
 
 
+    @Override
+    public List<Point> getGridPoints(Vector l) {
+       // return this.targetPoints;
+        return super.getGridPoints(l);
+    }
 
 }

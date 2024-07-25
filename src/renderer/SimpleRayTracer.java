@@ -73,8 +73,8 @@ public class SimpleRayTracer extends RayTracerBase{
 
     /**
      * Calculates the local effects of the given geometric point and ray.
-     * @param gp The geometric point for which to calculate the local effects.
-     * @param ray The ray used for the calculation.
+     * @param// gp The geometric point for which to calculate the local effects.
+     * @param// ray The ray used for the calculation.
      * @return The resulting color after applying the local effects.
      */
 //    private Color calcLocalEffects(GeoPoint gp, Ray ray, Double3 k)
@@ -127,11 +127,11 @@ public class SimpleRayTracer extends RayTracerBase{
                 Double3 ktr = transparency(gp, lightSource, l, n);
                 if (!ktr.product(k).lowerThan(MIN_CALC_COLOR_K)) {
                     Color iL;
-                    if (lightSource instanceof SpotLight || lightSource instanceof PointLight) {
-                        iL = calculateSoftShadow(lightSource, gp);
-                    } else {
+                    //if (lightSource instanceof SpotLight || lightSource instanceof PointLight) {
+                       // iL = calculateSoftShadow(lightSource, gp);
+                   // } else {
                         iL = lightSource.getIntensity(gp.point);
-                    }
+                   // }
                     iL = iL.scale(ktr);
                     color = color.add(
                             iL.scale(calcDiffusive(material, nl)),
@@ -296,43 +296,77 @@ public class SimpleRayTracer extends RayTracerBase{
      * function that creates Partial shading in case the body or bodies that block
      * the light source from the point have transparency at some level or another
      *
-     * @param gp- the point in the geometry
-     * @param light
+     * @param //gp- the point in the geometry
+     * @param //light
      * @param l         -the vector from the light to the point
      * @param n-        normal vector to the point at the geometry
      * @return double number represent the shadow
      */
-    private Double3 transparency (GeoPoint gp, LightSource light, Vector l, Vector n) {
-        Double3 sum = Double3.ZERO;// sum of ktr - Coefficients
-        List<Ray> beams = constructRaysToLight(light, l, n, gp);// create numberOfRays rays
-        for (Ray ray : beams) { // for each ray
-            List<GeoPoint> intersections = scene.geometries.findGeoIntersections(ray);// calculate Intersections
-            if (intersections != null)// there are intersections
-            {
-                double distance = light.getDistance(gp.point);
-                Double3 ktr = Double3.ONE;
-                for (GeoPoint geoPoint : intersections) {
-                    if (alignZero(geoPoint.point.distance(gp.point)) <= distance)
-                    {
-                        //negative when the intersection point is before(from the object view) the light source
-                        ktr = ktr.product(geoPoint.geometry.getMaterial().Kt);
-                        if (ktr.lowerThan(MIN_CALC_COLOR_K))// if we got to the minimum value of k- stop the recursion
-                        {
-                            ktr = Double3.ZERO;
-                            break;// stop the checking for current point
-                        }
-                    }
-                    // else -> the intersection point is after(from the object view) the light
-                    // source, there is no shadow
-                }
-                sum = sum.add(ktr);
-            }
-            else// no intersections
-            {
-                sum = sum.add(Double3.ONE);
-            }
+//    private Double3 transparency (GeoPoint gp, LightSource light, Vector l, Vector n) {
+//        Double3 sum = Double3.ZERO;// sum of ktr - Coefficients
+//        List<Ray> beams = constructRaysToLight(light, l, n, gp);// create numberOfRays rays
+//        for (Ray ray : beams) { // for each ray
+//            List<GeoPoint> intersections = scene.geometries.findGeoIntersections(ray);// calculate Intersections
+//            if (intersections != null)// there are intersections
+//            {
+//                double distance = light.getDistance(gp.point);
+//                Double3 ktr = Double3.ONE;
+//                for (GeoPoint geoPoint : intersections) {
+//                    if (alignZero(geoPoint.point.distance(gp.point)) <= distance)
+//                    {
+//                        //negative when the intersection point is before(from the object view) the light source
+//                        ktr = ktr.product(geoPoint.geometry.getMaterial().Kt);
+//                        if (ktr.lowerThan(MIN_CALC_COLOR_K))// if we got to the minimum value of k- stop the recursion
+//                        {
+//                            ktr = Double3.ZERO;
+//                            break;// stop the checking for current point
+//                        }
+//                    }
+//                    // else -> the intersection point is after(from the object view) the light
+//                    // source, there is no shadow
+//                }
+//                sum = sum.add(ktr);
+//            }
+//            else// no intersections
+//            {
+//                sum = sum.add(Double3.ONE);
+//            }
+//        }
+//        return sum.reduce(beams.size());// Average of Coefficients
+//    }
+    private Double3 transparency( GeoPoint geoPoint,LightSource ls, Vector l, Vector n) {
+        Double3 ktr = Double3.ZERO;
+        int count = 0;
+
+        List<Point> targetAreaPoints = ls.getGridPoints(l);
+        // in case the light is directional, we simply add a point in the opposite direction, so we will do 1 check
+        // as we used to do (Directional light is NOT affected by super sampling)
+        if (targetAreaPoints == null) {
+            targetAreaPoints = new LinkedList<>();
+            targetAreaPoints.add(geoPoint.point.add(l.scale(-1)));
         }
-        return sum.reduce(beams.size());// Average of Coefficients
+
+        for (Point p : targetAreaPoints) {
+            List<GeoPoint> intersections = scene.geometries.findGeoIntersections(new Ray(p.subtract(geoPoint.point).normalize(), geoPoint.point, n));
+            if (intersections == null) {
+                ktr = ktr.add(Double3.ONE);
+                count++;
+            } else {
+                double lightDistance = ls.getDistance(geoPoint.point);
+                for (GeoPoint geop : intersections) {
+                    if (Util.alignZero(geop.point.distance(geoPoint.point) - lightDistance) <= 0) {
+                        ktr = ktr.add(geop.geometry.getMaterial().Kt);
+                        count++;
+                    } else {
+                        ktr = ktr.add(Double3.ONE);
+                        count++;
+                    }
+                }
+            }
+            //if (ktr.scale(1.0 / count).lowerThan(MIN_CALC_COLOR_K))
+            //    return Double3.ZERO;
+        }
+        return ktr.scale(1.0 / count).lowerThan(MIN_CALC_COLOR_K) ? Double3.ZERO : ktr.scale(1.0 / count);
     }
 
 

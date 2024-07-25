@@ -6,6 +6,8 @@ import primitives.Color;
 import primitives.Point;
 import primitives.Vector;
 
+import java.util.List;
+
 /**
  * The DirectionalLight class represents a directional light source in a 3D scene.
  * It extends the Light class and implements the LightSource interface.
@@ -41,4 +43,11 @@ public class DirectionalLight extends Light implements LightSource
     public double getDistance(Point point) {
         return Double.POSITIVE_INFINITY;
     }
+
+    @Override
+    public List<Vector> getLCircle(Point p, double r, int amount) {
+        return List.of(getL(p));
+    }
+    @Override
+    public List<Point> getGridPoints(Vector l) { return null; }
 }

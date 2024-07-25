@@ -1,8 +1,14 @@
 package lighting;
 
+import primitives.BlackBoard;
 import primitives.Color;
 import primitives.Point;
 import primitives.Vector;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import static primitives.Util.isZero;
 
 /**
  * The PointLight class represents a point light source in a 3D scene.
@@ -29,11 +35,23 @@ public class PointLight extends Light implements LightSource
     public PointLight(Color intensity, Point position) {
         super(intensity);
         this.position = position;
+        this.radius=0;
+    }
+
+    public PointLight(Color intensity, Point position, double radius) {
+        super(intensity);
+        this.position = position;
+        this.radius = radius;
     }
 
     @Override
     public double getRadius() {
         return radius;
+    }
+
+    @Override
+    public List<Vector> getLCircle(Point p, double r, int amount) {
+        return List.of();
     }
 
     public PointLight setRadius(double radius) {
@@ -102,5 +120,17 @@ public class PointLight extends Light implements LightSource
         return point.distance(position);
     }
 
+    @Override
+    public List<Point> getGridPoints(Vector l) {
+        if (radius == 0) {
+            List<Point> li = new LinkedList<>();
+            li.add(position);
+            return li;
+        } else {
+            Vector v = !(isZero(l.getX()) || isZero(l.getY())) ? new Vector(-l.getY(), l.getX(), 0) :
+                    new Vector(1, 1, 0).normalize();
+            return BlackBoard.constructCircleBlackBoard(BlackBoard.getMAX_CELLS(), position, v, v.crossProduct(l), radius);
+        }
+    }
 
 }
