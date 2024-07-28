@@ -8,9 +8,11 @@ import scene.Scene;
 import primitives.*;
 import lighting.*;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.*;
+
 
 import geometries.Intersectable.GeoPoint;
 
@@ -77,40 +79,7 @@ public class SimpleRayTracer extends RayTracerBase{
      * @param// ray The ray used for the calculation.
      * @return The resulting color after applying the local effects.
      */
-//    private Color calcLocalEffects(GeoPoint gp, Ray ray, Double3 k)
-//    {
-//        // Get the emission color of the geometry at the geometric point
-//        Color color = gp.geometry.getEmission();
-//        // Calculate the direction vector of the ray
-//        Vector v = ray.getDir ();
-//        // Calculate the surface normal at the geometric point
-//        Vector n = gp.geometry.getNormal(gp.point);
-//        // Calculate the dot product of the normal and the direction vector
-//        double nv = alignZero(n.dotProduct(v));
-//        // If the dot product is close to zero, return the emission color
-//        if (nv == 0)
-//            return color;
-//        Material material = gp.geometry.getMaterial();
-//        // Iterate over all light sources in the scene
-//        for (LightSource lightSource : scene.lights)
-//        {
-//            // Get the direction vector from the geometric point to the light source
-//            Vector l = lightSource.getL(gp.point);
-//            double nl = alignZero(n.dotProduct(l));
-//            if (nl * nv > 0)
-//            {// sign(nl) == sing(nv)
-//                Double3 ktr = transparency(gp, lightSource, l, n);
-//                if (!ktr.product(k).lowerThan(MIN_CALC_COLOR_K))
-//                {
-//                    Color iL = lightSource.getIntensity(gp.point).scale(ktr);
-//                    // Calculate the diffuse component of the material
-//                    color = color.add(iL.scale(calcDiffusive(material, nl)),iL.scale(calcSpecular(material, n, l, nl, v)));
-//                    // Calculate the specular component of the material
-//                }
-//            }
-//        }
-//        return color;
-//    }
+
     private Color calcLocalEffects(GeoPoint gp, Ray ray, Double3 k) {
         Color color = gp.geometry.getEmission();
         Vector v = ray.getDir();
@@ -298,8 +267,8 @@ public class SimpleRayTracer extends RayTracerBase{
      *
      * @param //gp- the point in the geometry
      * @param //light
-     * @param l         -the vector from the light to the point
-     * @param n-        normal vector to the point at the geometry
+     * @param //l         -the vector from the light to the point
+     * @param //n-        normal vector to the point at the geometry
      * @return double number represent the shadow
      */
 //    private Double3 transparency (GeoPoint gp, LightSource light, Vector l, Vector n) {
@@ -334,19 +303,180 @@ public class SimpleRayTracer extends RayTracerBase{
 //        }
 //        return sum.reduce(beams.size());// Average of Coefficients
 //    }
-    private Double3 transparency( GeoPoint geoPoint,LightSource ls, Vector l, Vector n) {
+
+
+//    private Double3 transparency( GeoPoint geoPoint,LightSource ls, Vector l, Vector n) {
+//        Double3 ktr = Double3.ZERO;
+//        int count = 0;
+//
+//        List<Point> targetAreaPoints = ls.getGridPoints(l);
+//        // in case the light is directional, we simply add a point in the opposite direction, so we will do 1 check
+//        // as we used to do (Directional light is NOT affected by super sampling)
+//        if (targetAreaPoints == null) {
+//            targetAreaPoints = new LinkedList<>();
+//            targetAreaPoints.add(geoPoint.point.add(l.scale(-1)));
+//        }
+//
+//        for (Point p : targetAreaPoints) {
+//            List<GeoPoint> intersections = scene.geometries.findGeoIntersections(new Ray(p.subtract(geoPoint.point).normalize(), geoPoint.point, n));
+//            if (intersections == null) {
+//                ktr = ktr.add(Double3.ONE);
+//                count++;
+//            } else {
+//                double lightDistance = ls.getDistance(geoPoint.point);
+//                for (GeoPoint geop : intersections) {
+//                    if (Util.alignZero(geop.point.distance(geoPoint.point) - lightDistance) <= 0) {
+//                        ktr = ktr.add(geop.geometry.getMaterial().Kt);
+//                        count++;
+//                    } else {
+//                        ktr = ktr.add(Double3.ONE);
+//                        count++;
+//                    }
+//                }
+//            }
+//            //if (ktr.scale(1.0 / count).lowerThan(MIN_CALC_COLOR_K))
+//            //    return Double3.ZERO;
+//        }
+//        return ktr.scale(1.0 / count).lowerThan(MIN_CALC_COLOR_K) ? Double3.ZERO : ktr.scale(1.0 / count);
+//    }
+
+//
+//
+//    public class MultiThreadingUtil {
+//
+//        private static final int NUM_THREADS = 4;
+//        private static final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
+//
+//        public static <T> List<T> executeTasks(List<Callable<T>> tasks) throws InterruptedException, ExecutionException {
+//            List<Future<T>> futures = executor.invokeAll(tasks);
+//            List<T> results = new ArrayList<>();
+//
+//            for (Future<T> future : futures) {
+//                results.add(future.get());
+//            }
+//
+//            return results;
+//        }
+//
+//        public static void shutdown() {
+//            executor.shutdown();
+//            try {
+//                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+//                    executor.shutdownNow();
+//                }
+//            } catch (InterruptedException e) {
+//                executor.shutdownNow();
+//                Thread.currentThread().interrupt();
+//            }
+//        }
+//    }
+//
+//    private Callable<Double3> calculateTransparencyCallable(GeoPoint geoPoint, Point p, Vector l, Vector n, LightSource ls) {
+//        return () -> {
+//            List<GeoPoint> intersections = scene.geometries.findGeoIntersections(new Ray(p.subtract(geoPoint.point).normalize(), geoPoint.point, n));
+//            Double3 ktr = Double3.ZERO;
+//
+//            if (intersections == null) {
+//                ktr = Double3.ONE;
+//            } else {
+//                double lightDistance = ls.getDistance(geoPoint.point);
+//                for (GeoPoint geop : intersections) {
+//                    if (Util.alignZero(geop.point.distance(geoPoint.point) - lightDistance) <= 0) {
+//                        ktr = geop.geometry.getMaterial().Kt;
+//                    } else {
+//                        ktr = Double3.ONE;
+//                    }
+//                }
+//            }
+//
+//            return ktr;
+//        };
+//    }
+//
+//    private Double3 transparency(GeoPoint geoPoint, LightSource ls, Vector l, Vector n) {
+//        Double3 ktr = Double3.ZERO;
+//        int count = 0;
+//
+//        List<Point> targetAreaPoints = ls.getGridPoints(l);
+//
+//        if (targetAreaPoints == null) {
+//            targetAreaPoints = new LinkedList<>();
+//            targetAreaPoints.add(geoPoint.point.add(l.scale(-1)));
+//        }
+//
+//        List<Point> sampledPoints = adaptiveSampling(targetAreaPoints, geoPoint, l, n, ls);
+//
+//        List<Callable<Double3>> tasks = new ArrayList<>();
+//        for (Point p : sampledPoints) {
+//            tasks.add(calculateTransparencyCallable(geoPoint, p, l, n, ls));
+//        }
+//
+//        List<Double3> results = new ArrayList<>();
+//        try {
+//            results = MultiThreadingUtil.executeTasks(tasks);
+//        } catch (InterruptedException | ExecutionException e) {
+//            e.printStackTrace(); // או טיפול בחריגה בצורה מתאימה
+//            // במקרה של חריגה, ניתן להחזיר ערך ברירת מחדל או להפסיק את החישוב
+//            return Double3.ZERO;
+//        }
+//
+//        for (Double3 result : results) {
+//            ktr = ktr.add(result);
+//            count++;
+//        }
+//
+//        return ktr.scale(1.0 / count).lowerThan(MIN_CALC_COLOR_K) ? Double3.ZERO : ktr.scale(1.0 / count);
+//    }
+//
+//
+//    private List<Point> adaptiveSampling(List<Point> points, GeoPoint geoPoint, Vector l, Vector n, LightSource ls) {
+//        List<Point> initialSamples = List.of(points.get(0), points.get(points.size() - 1),
+//                points.get(points.size() / 2), points.get(points.size() / 2 - 1));
+//        List<Point> sampledPoints = new LinkedList<>(initialSamples);
+//
+//        List<Callable<Double3>> tasks = new ArrayList<>();
+//        for (Point p : initialSamples) {
+//            tasks.add(calculateTransparencyCallable(geoPoint, p, l, n, ls));
+//        }
+//
+//        List<Double3> results = new ArrayList<>();
+//        try {
+//            results = MultiThreadingUtil.executeTasks(tasks);
+//        } catch (InterruptedException | ExecutionException e) {
+//            e.printStackTrace(); // או טיפול בחריגה בצורה מתאימה
+//            // במקרה של חריגה, ניתן להחזיר את הדגימות הראשוניות בלבד או להפסיק את החישוב
+//            return sampledPoints; // החזרת התוצאות הראשוניות במקרה של שגיאה
+//        }
+//
+//        if (shouldSampleMore(results)) {
+//            for (int i = 1; i < points.size() - 1; i++) {
+//                if (!sampledPoints.contains(points.get(i))) {
+//                    sampledPoints.add(points.get(i));
+//                }
+//            }
+//        }
+//
+//        return sampledPoints;
+//    }
+
+
+
+
+    private Double3 transparency(GeoPoint geoPoint, LightSource ls, Vector l, Vector n) {
         Double3 ktr = Double3.ZERO;
         int count = 0;
 
         List<Point> targetAreaPoints = ls.getGridPoints(l);
-        // in case the light is directional, we simply add a point in the opposite direction, so we will do 1 check
-        // as we used to do (Directional light is NOT affected by super sampling)
+
         if (targetAreaPoints == null) {
             targetAreaPoints = new LinkedList<>();
             targetAreaPoints.add(geoPoint.point.add(l.scale(-1)));
         }
 
-        for (Point p : targetAreaPoints) {
+        // דגימה אדפטיבית
+        List<Point> sampledPoints = adaptiveSampling(targetAreaPoints, geoPoint, l, n, ls);
+
+        for (Point p : sampledPoints) {
             List<GeoPoint> intersections = scene.geometries.findGeoIntersections(new Ray(p.subtract(geoPoint.point).normalize(), geoPoint.point, n));
             if (intersections == null) {
                 ktr = ktr.add(Double3.ONE);
@@ -363,12 +493,73 @@ public class SimpleRayTracer extends RayTracerBase{
                     }
                 }
             }
-            //if (ktr.scale(1.0 / count).lowerThan(MIN_CALC_COLOR_K))
-            //    return Double3.ZERO;
         }
+
         return ktr.scale(1.0 / count).lowerThan(MIN_CALC_COLOR_K) ? Double3.ZERO : ktr.scale(1.0 / count);
     }
 
+    private List<Point> adaptiveSampling(List<Point> points, GeoPoint geoPoint, Vector l, Vector n, LightSource ls) {
+        // דגימה ראשונית של 4 נקודות פינה
+        List<Point> initialSamples = List.of(points.get(0), points.get(points.size() - 1),
+                points.get(points.size() / 2), points.get(points.size() / 2 - 1));
+        List<Point> sampledPoints = new LinkedList<>(initialSamples);
+
+        // חישוב קרניים והתוצאה שלהן
+        List<Double3> results = new LinkedList<>();
+        for (Point p : initialSamples) {
+            results.add(calculateTransparency(geoPoint, p, l, n, ls));
+        }
+
+        // בדיקה אם יש צורך בדגימה נוספת על פי סטיית התקן או שינוי משמעותי בתוצאה
+        if (shouldSampleMore(results)) {
+            // הוספת נקודות דגימה נוספות
+            for (int i = 1; i < points.size() - 1; i++) {
+                if (!sampledPoints.contains(points.get(i))) {
+                    sampledPoints.add(points.get(i));
+                }
+            }
+        }
+
+        return sampledPoints;
+    }
+
+    private Double3 calculateTransparency(GeoPoint geoPoint, Point p, Vector l, Vector n, LightSource ls) {
+        List<GeoPoint> intersections = scene.geometries.findGeoIntersections(new Ray(p.subtract(geoPoint.point).normalize(), geoPoint.point, n));
+        Double3 ktr = Double3.ZERO;
+
+        if (intersections == null) {
+            ktr = Double3.ONE;
+        } else {
+            double lightDistance = ls.getDistance(geoPoint.point);
+            for (GeoPoint geop : intersections) {
+                if (Util.alignZero(geop.point.distance(geoPoint.point) - lightDistance) <= 0) {
+                    ktr = geop.geometry.getMaterial().Kt;
+                } else {
+                    ktr = Double3.ONE;
+                }
+            }
+        }
+
+        return ktr;
+    }
+
+    private boolean shouldSampleMore(List<Double3> results) {
+        for (int i = 0; i < results.size(); i++) {
+            for (int j = i + 1; j < results.size(); j++) {
+                if (!isColorsEqual(results.get(i), results.get(j))) {
+                    return true; // נמצא שינוי משמעותי בין הצבעים, יש לבצע דגימה נוספת
+                }
+            }
+        }
+        return false; // כל הצבעים קרובים מספיק זה לזה, אין צורך בדגימה נוספת
+    }
+
+    private boolean isColorsEqual(Double3 double3, Double3 double31) {
+        double c1 = Math.sqrt(double3.d1 * double3.d1 + double3.d2 * double3.d2 + double3.d3 * double3.d3);
+        double c2 = Math.sqrt(double31.d1 * double31.d1 + double31.d2 * double31.d2 + double31.d3 * double31.d3);
+        double avg = (c1 + c2) / 2d;
+        return double3.distance(double31) <= 0.25 * avg;
+    }
 
 
     /**

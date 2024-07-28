@@ -11,11 +11,11 @@ import static primitives.Util.isZero;
  */
 public class Double3 {
     /** First number */
-    final double                d1;
+    public final double                d1;
     /** Second number */
-    final double                d2;
+    public final double                d2;
     /** Third number */
-    final double                d3;
+    public final double                d3;
 
     /** Zero triad (0,0,0) */
     public static final Double3 ZERO = new Double3(0, 0, 0);
@@ -115,6 +115,13 @@ public class Double3 {
      * @return       true if all the numbers are less that appropriate numbers in
      *               other
      *               triad, false otherwise
+     *
      */
+
+    public double distance(Double3 other) {
+        return Math.sqrt(Math.pow(this.d1 - other.d1, 2) + Math.pow(this.d2 - other.d2, 2) + Math.pow(this.d3 - other.d3, 2));
+    }
     public boolean lowerThan(Double3 other) { return d1 < other.d1 && d2 < other.d2 && d3 < other.d3; }
+
+
 }
