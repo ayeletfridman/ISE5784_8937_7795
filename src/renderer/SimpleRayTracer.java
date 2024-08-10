@@ -25,7 +25,7 @@ public class SimpleRayTracer extends RayTracerBase{
     private static final Double3 INITIAL_K = Double3.ONE;
     private static final int MAX_CALC_COLOR_LEVEL = 10;
     private static final double MIN_CALC_COLOR_K = 0.001;
-    private int numOfRays = 0;
+
     /**
      * Constructs with one param.
      *
@@ -33,7 +33,6 @@ public class SimpleRayTracer extends RayTracerBase{
      */
     public SimpleRayTracer(Scene scene) {
         super(scene);
-        this.numOfRays=55;
     }
 
     /**
@@ -53,12 +52,6 @@ public class SimpleRayTracer extends RayTracerBase{
     private Color calcColor(GeoPoint gp, Ray ray)
     {
         return calcColor(gp, ray, MAX_CALC_COLOR_LEVEL, INITIAL_K).add(scene.ambientLight.getIntensity());
-    }
-
-    public SimpleRayTracer setNumOfRadius(int numOfRays)
-    {
-        this.numOfRays = numOfRays;
-        return this;
     }
 
 
@@ -112,56 +105,6 @@ public class SimpleRayTracer extends RayTracerBase{
         return color;
     }
 
-    /**
-     * Calculates the soft shadow effect by averaging the light intensity
-     * from multiple rays cast from a point on the geometry towards a spotlight.
-     *
-     * @param light The spotlight source.
-     * @param gp The GeoPoint representing the intersection point on the geometry.
-     * @return The average light intensity considering the shadows.
-     */
-    private Color calculateSoftShadow(LightSource light, GeoPoint gp) {
-        // Calculate the direction from the intersection point to the light source
-        Vector lightDirection = light.getL(gp.point);
-
-        // Get the normal vector at the intersection point
-        Vector normal = gp.geometry.getNormal(gp.point);
-
-        // Construct multiple rays from the intersection point towards the light source
-        List<Ray> lightRays = constructRaysToLight(
-                light,
-                lightDirection,
-                normal,
-                gp
-        );
-
-        // Initialize the total light intensity to black (no intensity)
-        Color totalIntensity = Color.BLACK;
-        // Initialize a counter to keep track of the number of unblocked rays
-        int count = 0;
-
-        // Iterate over each constructed ray
-        for (Ray ray : lightRays) {
-            // Get the direction of the current ray
-            Vector l = ray.getDir();
-            // Calculate the dot product of the normal vector and the ray direction
-            double nl = alignZero(normal.dotProduct(l));
-            // Only consider rays that are in the same direction as the normal
-            if (nl > 0) {
-                // Find the closest intersection point of the current ray with the scene
-                GeoPoint intersection = findClosestIntersection(ray);
-                // Check if the ray is not blocked or if the blocking intersection is farther than the light source
-                if (intersection == null || intersection.point.distance(gp.point) > light.getDistance(gp.point)) {
-                    // Add the light intensity at the ray's origin point to the total intensity
-                    totalIntensity = totalIntensity.add(light.getIntensity(ray.getP0()));
-                    // Increment the count of unblocked rays
-                    count++;
-                }
-            }
-        }
-        // Return the average light intensity if there are unblocked rays, otherwise return black
-        return count == 0 ? Color.BLACK : totalIntensity.scale(1.0 / count);
-    }
 
     /**
      * Calculates the diffuse component of the material.
@@ -271,248 +214,77 @@ public class SimpleRayTracer extends RayTracerBase{
      * @param //n-        normal vector to the point at the geometry
      * @return double number represent the shadow
      */
-//    private Double3 transparency (GeoPoint gp, LightSource light, Vector l, Vector n) {
-//        Double3 sum = Double3.ZERO;// sum of ktr - Coefficients
-//        List<Ray> beams = constructRaysToLight(light, l, n, gp);// create numberOfRays rays
-//        for (Ray ray : beams) { // for each ray
-//            List<GeoPoint> intersections = scene.geometries.findGeoIntersections(ray);// calculate Intersections
-//            if (intersections != null)// there are intersections
-//            {
-//                double distance = light.getDistance(gp.point);
-//                Double3 ktr = Double3.ONE;
-//                for (GeoPoint geoPoint : intersections) {
-//                    if (alignZero(geoPoint.point.distance(gp.point)) <= distance)
-//                    {
-//                        //negative when the intersection point is before(from the object view) the light source
-//                        ktr = ktr.product(geoPoint.geometry.getMaterial().Kt);
-//                        if (ktr.lowerThan(MIN_CALC_COLOR_K))// if we got to the minimum value of k- stop the recursion
-//                        {
-//                            ktr = Double3.ZERO;
-//                            break;// stop the checking for current point
-//                        }
-//                    }
-//                    // else -> the intersection point is after(from the object view) the light
-//                    // source, there is no shadow
-//                }
-//                sum = sum.add(ktr);
-//            }
-//            else// no intersections
-//            {
-//                sum = sum.add(Double3.ONE);
-//            }
-//        }
-//        return sum.reduce(beams.size());// Average of Coefficients
-//    }
-
-
-//    private Double3 transparency( GeoPoint geoPoint,LightSource ls, Vector l, Vector n) {
-//        Double3 ktr = Double3.ZERO;
-//        int count = 0;
-//
-//        List<Point> targetAreaPoints = ls.getGridPoints(l);
-//        // in case the light is directional, we simply add a point in the opposite direction, so we will do 1 check
-//        // as we used to do (Directional light is NOT affected by super sampling)
-//        if (targetAreaPoints == null) {
-//            targetAreaPoints = new LinkedList<>();
-//            targetAreaPoints.add(geoPoint.point.add(l.scale(-1)));
-//        }
-//
-//        for (Point p : targetAreaPoints) {
-//            List<GeoPoint> intersections = scene.geometries.findGeoIntersections(new Ray(p.subtract(geoPoint.point).normalize(), geoPoint.point, n));
-//            if (intersections == null) {
-//                ktr = ktr.add(Double3.ONE);
-//                count++;
-//            } else {
-//                double lightDistance = ls.getDistance(geoPoint.point);
-//                for (GeoPoint geop : intersections) {
-//                    if (Util.alignZero(geop.point.distance(geoPoint.point) - lightDistance) <= 0) {
-//                        ktr = ktr.add(geop.geometry.getMaterial().Kt);
-//                        count++;
-//                    } else {
-//                        ktr = ktr.add(Double3.ONE);
-//                        count++;
-//                    }
-//                }
-//            }
-//            //if (ktr.scale(1.0 / count).lowerThan(MIN_CALC_COLOR_K))
-//            //    return Double3.ZERO;
-//        }
-//        return ktr.scale(1.0 / count).lowerThan(MIN_CALC_COLOR_K) ? Double3.ZERO : ktr.scale(1.0 / count);
-//    }
-
-//
-//
-//    public class MultiThreadingUtil {
-//
-//        private static final int NUM_THREADS = 4;
-//        private static final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
-//
-//        public static <T> List<T> executeTasks(List<Callable<T>> tasks) throws InterruptedException, ExecutionException {
-//            List<Future<T>> futures = executor.invokeAll(tasks);
-//            List<T> results = new ArrayList<>();
-//
-//            for (Future<T> future : futures) {
-//                results.add(future.get());
-//            }
-//
-//            return results;
-//        }
-//
-//        public static void shutdown() {
-//            executor.shutdown();
-//            try {
-//                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-//                    executor.shutdownNow();
-//                }
-//            } catch (InterruptedException e) {
-//                executor.shutdownNow();
-//                Thread.currentThread().interrupt();
-//            }
-//        }
-//    }
-//
-//    private Callable<Double3> calculateTransparencyCallable(GeoPoint geoPoint, Point p, Vector l, Vector n, LightSource ls) {
-//        return () -> {
-//            List<GeoPoint> intersections = scene.geometries.findGeoIntersections(new Ray(p.subtract(geoPoint.point).normalize(), geoPoint.point, n));
-//            Double3 ktr = Double3.ZERO;
-//
-//            if (intersections == null) {
-//                ktr = Double3.ONE;
-//            } else {
-//                double lightDistance = ls.getDistance(geoPoint.point);
-//                for (GeoPoint geop : intersections) {
-//                    if (Util.alignZero(geop.point.distance(geoPoint.point) - lightDistance) <= 0) {
-//                        ktr = geop.geometry.getMaterial().Kt;
-//                    } else {
-//                        ktr = Double3.ONE;
-//                    }
-//                }
-//            }
-//
-//            return ktr;
-//        };
-//    }
-//
-//    private Double3 transparency(GeoPoint geoPoint, LightSource ls, Vector l, Vector n) {
-//        Double3 ktr = Double3.ZERO;
-//        int count = 0;
-//
-//        List<Point> targetAreaPoints = ls.getGridPoints(l);
-//
-//        if (targetAreaPoints == null) {
-//            targetAreaPoints = new LinkedList<>();
-//            targetAreaPoints.add(geoPoint.point.add(l.scale(-1)));
-//        }
-//
-//        List<Point> sampledPoints = adaptiveSampling(targetAreaPoints, geoPoint, l, n, ls);
-//
-//        List<Callable<Double3>> tasks = new ArrayList<>();
-//        for (Point p : sampledPoints) {
-//            tasks.add(calculateTransparencyCallable(geoPoint, p, l, n, ls));
-//        }
-//
-//        List<Double3> results = new ArrayList<>();
-//        try {
-//            results = MultiThreadingUtil.executeTasks(tasks);
-//        } catch (InterruptedException | ExecutionException e) {
-//            e.printStackTrace(); // או טיפול בחריגה בצורה מתאימה
-//            // במקרה של חריגה, ניתן להחזיר ערך ברירת מחדל או להפסיק את החישוב
-//            return Double3.ZERO;
-//        }
-//
-//        for (Double3 result : results) {
-//            ktr = ktr.add(result);
-//            count++;
-//        }
-//
-//        return ktr.scale(1.0 / count).lowerThan(MIN_CALC_COLOR_K) ? Double3.ZERO : ktr.scale(1.0 / count);
-//    }
-//
-//
-//    private List<Point> adaptiveSampling(List<Point> points, GeoPoint geoPoint, Vector l, Vector n, LightSource ls) {
-//        List<Point> initialSamples = List.of(points.get(0), points.get(points.size() - 1),
-//                points.get(points.size() / 2), points.get(points.size() / 2 - 1));
-//        List<Point> sampledPoints = new LinkedList<>(initialSamples);
-//
-//        List<Callable<Double3>> tasks = new ArrayList<>();
-//        for (Point p : initialSamples) {
-//            tasks.add(calculateTransparencyCallable(geoPoint, p, l, n, ls));
-//        }
-//
-//        List<Double3> results = new ArrayList<>();
-//        try {
-//            results = MultiThreadingUtil.executeTasks(tasks);
-//        } catch (InterruptedException | ExecutionException e) {
-//            e.printStackTrace(); // או טיפול בחריגה בצורה מתאימה
-//            // במקרה של חריגה, ניתן להחזיר את הדגימות הראשוניות בלבד או להפסיק את החישוב
-//            return sampledPoints; // החזרת התוצאות הראשוניות במקרה של שגיאה
-//        }
-//
-//        if (shouldSampleMore(results)) {
-//            for (int i = 1; i < points.size() - 1; i++) {
-//                if (!sampledPoints.contains(points.get(i))) {
-//                    sampledPoints.add(points.get(i));
-//                }
-//            }
-//        }
-//
-//        return sampledPoints;
-//    }
-
-
-
-
     private Double3 transparency(GeoPoint geoPoint, LightSource ls, Vector l, Vector n) {
+        // Initialize transparency value to zero and count of samples to zero
         Double3 ktr = Double3.ZERO;
         int count = 0;
 
+        // Get target area points from the light source based on the light direction
         List<Point> targetAreaPoints = ls.getGridPoints(l);
 
+        // If no target area points are found, create a default point opposite to the light direction
         if (targetAreaPoints == null) {
             targetAreaPoints = new LinkedList<>();
             targetAreaPoints.add(geoPoint.point.add(l.scale(-1)));
         }
 
-        // דגימה אדפטיבית
+        // Perform adaptive sampling to refine the list of target area points
         List<Point> sampledPoints = adaptiveSampling(targetAreaPoints, geoPoint, l, n, ls);
 
+        // Iterate through each sampled point
         for (Point p : sampledPoints) {
-            List<GeoPoint> intersections = scene.geometries.findGeoIntersections(new Ray(p.subtract(geoPoint.point).normalize(), geoPoint.point, n));
+            // Create a ray from the sampled point to geoPoint and find intersections with geometries in the scene
+            List<GeoPoint> intersections = scene.geometries.findGeoIntersections(
+                    new Ray(p.subtract(geoPoint.point).normalize(), geoPoint.point, n)
+            );
+
+            // If no intersections are found, assume full transparency
             if (intersections == null) {
                 ktr = ktr.add(Double3.ONE);
                 count++;
-            } else {
+            }
+            else {
+                // Calculate the distance from the light source to geoPoint
                 double lightDistance = ls.getDistance(geoPoint.point);
+
+                // Iterate through all intersection points
                 for (GeoPoint geop : intersections) {
+                    // If the intersection is within the light distance
                     if (Util.alignZero(geop.point.distance(geoPoint.point) - lightDistance) <= 0) {
+                        // Update transparency based on the material's transparency (Kt)
                         ktr = ktr.add(geop.geometry.getMaterial().Kt);
-                        count++;
-                    } else {
-                        ktr = ktr.add(Double3.ONE);
-                        count++;
                     }
+                    else {
+                        // Update transparency to full transparency
+                        ktr = ktr.add(Double3.ONE);
+                    }
+                    count++;
                 }
             }
         }
 
+        // Calculate the average transparency and return zero if it is below the minimum threshold
         return ktr.scale(1.0 / count).lowerThan(MIN_CALC_COLOR_K) ? Double3.ZERO : ktr.scale(1.0 / count);
     }
 
+
     private List<Point> adaptiveSampling(List<Point> points, GeoPoint geoPoint, Vector l, Vector n, LightSource ls) {
-        // דגימה ראשונית של 4 נקודות פינה
+        // Initial sampling of 4 corner points
         List<Point> initialSamples = List.of(points.get(0), points.get(points.size() - 1),
                 points.get(points.size() / 2), points.get(points.size() / 2 - 1));
+
+        // Create a new list of sampled points starting with the initial samples
         List<Point> sampledPoints = new LinkedList<>(initialSamples);
 
-        // חישוב קרניים והתוצאה שלהן
+        // Calculate the transparency/light effect for the initial samples
         List<Double3> results = new LinkedList<>();
         for (Point p : initialSamples) {
             results.add(calculateTransparency(geoPoint, p, l, n, ls));
         }
 
-        // בדיקה אם יש צורך בדגימה נוספת על פי סטיית התקן או שינוי משמעותי בתוצאה
+        // Check if additional sampling is needed based on standard deviation or significant variation
         if (shouldSampleMore(results)) {
-            // הוספת נקודות דגימה נוספות
+            // Add more sample points if needed
             for (int i = 1; i < points.size() - 1; i++) {
                 if (!sampledPoints.contains(points.get(i))) {
                     sampledPoints.add(points.get(i));
@@ -520,98 +292,73 @@ public class SimpleRayTracer extends RayTracerBase{
             }
         }
 
+        // Return the final list of sampled points
         return sampledPoints;
     }
 
+
     private Double3 calculateTransparency(GeoPoint geoPoint, Point p, Vector l, Vector n, LightSource ls) {
-        List<GeoPoint> intersections = scene.geometries.findGeoIntersections(new Ray(p.subtract(geoPoint.point).normalize(), geoPoint.point, n));
+        // Create a ray from point p towards geoPoint
+        List<GeoPoint> intersections = scene.geometries.findGeoIntersections(
+                new Ray(p.subtract(geoPoint.point).normalize(), geoPoint.point, n)
+        );
+
+        // Initialize the transparency value to zero (no light passes)
         Double3 ktr = Double3.ZERO;
 
+        // If there are no intersections, transparency is full (all light passes)
         if (intersections == null) {
             ktr = Double3.ONE;
-        } else {
+        }
+        else {
+            // Calculate the distance from the light source to the geoPoint
             double lightDistance = ls.getDistance(geoPoint.point);
+
+            // Loop through all intersection points
             for (GeoPoint geop : intersections) {
+                // If the intersection is closer to the light source than geoPoint
                 if (Util.alignZero(geop.point.distance(geoPoint.point) - lightDistance) <= 0) {
+                    // Update transparency based on the material's transparency (Kt)
                     ktr = geop.geometry.getMaterial().Kt;
-                } else {
+                }
+                else {
+                    // If the intersection is beyond the light source, full transparency
                     ktr = Double3.ONE;
                 }
             }
         }
 
+        // Return the calculated transparency value
         return ktr;
     }
 
+
     private boolean shouldSampleMore(List<Double3> results) {
+        // Loop through all results
         for (int i = 0; i < results.size(); i++) {
+            // Compare the current result with all subsequent results
             for (int j = i + 1; j < results.size(); j++) {
+                // If any two results are not equal
                 if (!isColorsEqual(results.get(i), results.get(j))) {
-                    return true; // נמצא שינוי משמעותי בין הצבעים, יש לבצע דגימה נוספת
+                    // Significant difference found, additional sampling is needed
+                    return true;
                 }
             }
         }
-        return false; // כל הצבעים קרובים מספיק זה לזה, אין צורך בדגימה נוספת
+        // All results are sufficiently close to each other, no additional sampling needed
+        return false;
     }
+
 
     private boolean isColorsEqual(Double3 double3, Double3 double31) {
+        // Calculate the magnitude (length) of the first color vector
         double c1 = Math.sqrt(double3.d1 * double3.d1 + double3.d2 * double3.d2 + double3.d3 * double3.d3);
+        // Calculate the magnitude (length) of the second color vector
         double c2 = Math.sqrt(double31.d1 * double31.d1 + double31.d2 * double31.d2 + double31.d3 * double31.d3);
+        // Compute the average magnitude of the two color vectors
         double avg = (c1 + c2) / 2d;
+        // Return true if the distance between the two color vectors is less than or equal to 25% of the average magnitude
         return double3.distance(double31) <= 0.25 * avg;
-    }
-
-
-    /**
-
-     Constructs a list of rays from a given point towards a light source.
-
-     @param light The light source
-     @param l Vector representing the direction from the point to the light source
-     @param n Normal vector at the integration point
-     @param geopoint The integration point on the object's surface
-     @return A list of rays from the integration point towards the light source
-     */
-    private List<Ray> constructRaysToLight(LightSource light, Vector l, Vector n, GeoPoint geopoint) {
-        Vector lightDirection = l.scale(-1); // from point to light source
-        Ray lightRay = new Ray(geopoint.point, lightDirection, n);
-        List<Ray> beam = new LinkedList<>();// create list of rays
-        beam.add(lightRay);
-        if (light.getRadius() == 0) //if the light is one point(no radius) send one ray
-            return beam;
-        Point p0 = lightRay.getP0();// the start point of the ray (the integration point)
-        Vector v = lightRay.getDir();
-        Vector vx= v.OrthogonalVector();
-        Vector vy = (v.crossProduct(vx)).normalize();
-        double r = light.getRadius();
-        double distance = light.getDistance(p0);
-        Point pC;
-        if(isZero(distance))
-            pC =p0;
-        else
-            pC = lightRay.getPoint(distance);// calculate the center point of the light
-        for (int i = 0; i < numOfRays - 1; i++)
-        {
-            // create random polar system coordinates of a point in circle of radius r
-            double cosTeta = ThreadLocalRandom.current().nextDouble(-1, 1);
-            double sinTeta = Math.sqrt(1 - cosTeta * cosTeta);
-            double d = ThreadLocalRandom.current().nextDouble(0, r);
-            // Convert polar coordinates to Cartesian ones
-            double x = d * cosTeta;
-            double y = d * sinTeta;
-            // pC - center of the circle
-            // p0 - start of central ray, v - its direction, distance - from p0 to pC
-            Point point = pC;
-            //move the new point from the center to the random point
-            if (!isZero(x))
-                point = point.add(vx.scale(x));
-            if (!isZero(y))
-                point = point.add(vy.scale(y));
-            if(!(isZero(x)&& isZero(y)))
-                beam.add(new Ray(p0, point.subtract(p0), n)); // normalized inside Ray ctor
-        }
-        return beam;
-
     }
 
 

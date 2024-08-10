@@ -122,15 +122,27 @@ public class PointLight extends Light implements LightSource
 
     @Override
     public List<Point> getGridPoints(Vector l) {
+        // If the radius is zero, return a list containing only the position point
         if (radius == 0) {
             List<Point> li = new LinkedList<>();
             li.add(position);
             return li;
         } else {
-            Vector v = !(isZero(l.getX()) || isZero(l.getY())) ? new Vector(-l.getY(), l.getX(), 0) :
-                    new Vector(1, 1, 0).normalize();
-            return BlackBoard.constructCircleBlackBoard(BlackBoard.getMAX_CELLS(), position, v, v.crossProduct(l), radius);
+            // Determine the perpendicular vector to 'l'
+            Vector v = !(isZero(l.getX()) || isZero(l.getY())) ?
+                    new Vector(-l.getY(), l.getX(), 0) :  // If x or y of 'l' is not zero, calculate a perpendicular vector
+                    new Vector(1, 1, 0).normalize();     // If both x and y of 'l' are zero, use a default vector and normalize it
+
+            // Call the constructCircleBlackBoard function to create a list of points based on the perpendicular vector
+            return BlackBoard.constructCircleBlackBoard(
+                    BlackBoard.getMAX_CELLS(),   // Number of cells in each direction
+                    position,                    // The center point of the circle
+                    v,                           // The perpendicular vector representing the X direction in the circle
+                    v.crossProduct(l),           // The perpendicular vector calculated using the cross product with 'l'
+                    radius                       // Radius of the circle
+            );
         }
     }
+
 
 }

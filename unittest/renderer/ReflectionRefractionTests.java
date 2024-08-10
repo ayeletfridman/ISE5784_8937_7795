@@ -278,6 +278,9 @@ public class ReflectionRefractionTests {
                         .setMaterial(new Material().setKd(0.5).setKs(0.5).setShininess(60).setKt(0)).setEmission(new Color(YELLOW)),
                 new Triangle(new Point(-59, -39, -50), new Point(45, -36, -50), new Point(45, -42, -50)) //
                         .setMaterial(new Material().setKd(0.5).setKs(0.5).setShininess(60).setKt(0)).setEmission(new Color(YELLOW)),
+
+
+                //background
                 new Plane(new Point(-150, -150, -250), new Vector(0,0,1))
                         .setMaterial(new Material().setKd(0.5).setKs(0.5).setShininess(20).setKt(0.5)).setEmission(new Color(gray)),
                 new Plane(new Point(0, -75, 0), new Vector(0,1,0))
